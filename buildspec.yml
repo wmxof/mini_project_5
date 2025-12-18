@@ -5,14 +5,14 @@ phases:
     runtime-versions:
       nodejs: 20
     commands:
-      - echo "Build phase skipped or minimal"
+      - cd miniproject4-next
+      - npm ci
   build:
     commands:
-      - echo "No build artifact packing beyond source"
+      - npm run build
 
 artifacts:
   files:
     - appspec.yml
-    - scripts/**/*
     - miniproject4-next/**/*
-    - miniproject4-spring/**/*
+  discard-paths: no
