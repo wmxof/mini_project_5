@@ -64,7 +64,6 @@ export default function BookEditPage() {
     const [content, setContent] = useState("");
     const [coverUrl, setCoverUrl] = useState("");
     const [isGenerating, setIsGenerating] = useState(false);
-    const [isSubmitting, setIsSubmitting] = useState(false); //추가
 
     // (선택) 수정 모드일 때 기존 책 정보 불러오기
     useEffect(() => {
@@ -236,8 +235,6 @@ export default function BookEditPage() {
             return;
         }
 
-        setIsSubmitting(true); // 🔥 버튼 비활성화 시작
-
         try {
             if (isEditMode) {
                 await updateBook();
@@ -267,7 +264,6 @@ export default function BookEditPage() {
                 title: "요청 실패",
                 message: e.message || "요청 처리 중 오류가 발생했습니다.",
             });
-            setIsSubmitting(false); // 🔥 요청 끝 → 다시 버튼 활성화
         }
     };
 
@@ -441,12 +437,8 @@ export default function BookEditPage() {
                         {isGenerating ? "생성 중..." : "표지 생성"}
                     </Button>
 
-                    <Button
-                        variant="contained"
-                        onClick={handleSubmit}
-                        disabled={isSubmitting || isGenerating}
-                    >
-                        {isSubmitting ? (isEditMode ? "수정 중..." : "등록 중...") : (isEditMode ? "수정" : "등록")}
+                    <Button variant="contained" onClick={handleSubmit}>
+                        {isEditMode ? "수정" : "등록"}
                     </Button>
                 </Box>
 
