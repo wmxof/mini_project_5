@@ -55,6 +55,7 @@ export default function EditClient() {
   }, [router]);
 
   // 🔹 입력 상태
+  const [backendIp, setBackendIp] = useState(""); // ✅ 추가: 백엔드 IP(또는 host) 변수
   const [apiKey, setApiKey] = useState("");
   const [model, setModel] = useState("dall-e-2");
   const [title, setTitle] = useState("");
@@ -80,7 +81,8 @@ export default function EditClient() {
       const response = await fetch("/api/cover-generator", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ apiKey, title, content, model }),
+        // ✅ backendIp를 함께 넘김(cover-generator API Route에서 사용)
+        body: JSON.stringify({ apiKey, title, content, model, backendIp }),
       });
 
       const result = await response.json();
@@ -150,6 +152,16 @@ export default function EditClient() {
           <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1 }}>
             OpenAI 설정
           </Typography>
+
+          {/* ✅ 추가: 백엔드 IP/호스트 입력(원하면 숨겨도 됨) */}
+          <TextField
+            label="백엔드 IP/호스트 (선택)"
+            placeholder="예) 15.165.xxx.xxx 또는 api.example.com"
+            fullWidth
+            value={backendIp}
+            onChange={(e) => setBackendIp(e.target.value)}
+            sx={{ mb: 2 }}
+          />
 
           <TextField
             label="API Key"
