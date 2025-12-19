@@ -7,7 +7,11 @@ const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
     const [user, setUser] = useState(null); // 로그인 user_id 저장
-    const [username, setUsername] = useState(null); // 로그인 user_id 저장
+    const [username, setUsername] = useState(null); // 로그인 아이디 저장
+
+    // ✅ (필수급) localhost 하드코딩 제거: 환경변수 우선, 없으면 로컬
+    const BACKEND_BASE_URL =
+        process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080";
 
     // ✔ 새로고침 시 로그인 유지
     useEffect(() => {
@@ -23,13 +27,14 @@ export function AuthProvider({ children }) {
     // ✅ axios 로그인 함수
     // ----------------------------------------------------------------------------------------
     const login = async (id, pw) => {
-        const url = `http://localhost:8080/api/v1/users/login`;
+        // ✅ (필수급) 환경변수 기반으로 URL 구성
+        const url = `${BACKEND_BASE_URL}/api/v1/users/login`;
         console.log("📌 로그인 요청 URL:", url);
 
         try {
             const res = await axios.post(url, {
                 login_id: id,
-                password: pw
+                password: pw,
             });
 
             // ✔ 정상 응답이면 user_id 저장
@@ -44,7 +49,6 @@ export function AuthProvider({ children }) {
             localStorage.setItem("loginUser", userId);
             localStorage.setItem("loginUsername", id);
             return userId;
-
         } catch (err) {
             // Axios 에러 구조 분석
             if (err.response) {
@@ -65,7 +69,14 @@ export function AuthProvider({ children }) {
     // ----------------------------------------------------------------------------------------
     const logout = () => {
         setUser(null);
+
+        // ✅ (필수급) username도 같이 정리
+        setUsername(null);
+
         localStorage.removeItem("loginUser");
+
+        // ✅ (필수급) loginUsername도 같이 제거
+        localStorage.removeItem("loginUsername");
     };
 
     return (
