@@ -1,0 +1,18 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 20
+    commands:
+      - cd miniproject4-next
+      - npm ci
+  build:
+    commands:
+      - npm run build
+
+artifacts:
+  files:
+    - appspec.yml
+    - miniproject4-next/**/*
+  discard-paths: no
