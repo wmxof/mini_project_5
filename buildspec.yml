@@ -7,12 +7,27 @@ phases:
     commands:
       - cd miniproject4-next
       - npm ci
+
   build:
     commands:
       - npm run build
 
 artifacts:
   files:
+    # CodeDeploy가 루트에서 appspec.yml을 찾게 유지
     - appspec.yml
-    - miniproject4-next/**/*
+
+    # 실행/배포에 필요한 최소 파일들만 포함
+    - miniproject4-next/.next/**/*
+    - miniproject4-next/public/**/*
+    - miniproject4-next/package.json
+    - miniproject4-next/package-lock.json
+
+    # 있으면 포함(프로젝트에 맞게 선택)
+    - miniproject4-next/next.config.* 
+    - miniproject4-next/.env.production
   discard-paths: no
+
+cache:
+  paths:
+    - miniproject4-next/node_modules/**/*
