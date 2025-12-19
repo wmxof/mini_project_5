@@ -3,187 +3,191 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-    Box,
-    Button,
-    Container,
-    TextField,
-    Typography,
-    Card,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogContentText,
-    DialogActions,
+  Box,
+  Button,
+  Container,
+  TextField,
+  Typography,
+  Card,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
 } from "@mui/material";
 import Header from "../components/Header";
 import axios from "axios";
 
 export default function SignupPage() {
-    const router = useRouter();
+  const router = useRouter();
 
-    const [id, setId] = useState("");
-    const [pw, setPw] = useState("");
-    const [pwCheck, setPwCheck] = useState("");
+  const [id, setId] = useState("");
+  const [pw, setPw] = useState("");
+  const [pwCheck, setPwCheck] = useState("");
+  const [loading, setLoading] = useState(false);
 
-    const [dialog, setDialog] = useState({
-        open: false,
-        title: "",
-        message: "",
-        success: false,
+  const [dialog, setDialog] = useState({
+    open: false,
+    title: "",
+    message: "",
+    success: false,
+  });
+
+  const openDialog = (title, message, success = false) => {
+    setDialog({ open: true, title, message, success });
+  };
+
+  // ✅ dialog.success를 안전하게 처리(상태 최신값 prev 사용)
+  const closeDialog = () => {
+    setDialog((prev) => {
+      if (prev.success) router.replace("/login");
+      return { ...prev, open: false };
     });
+  };
 
-    const openDialog = (title, message, success = false) => {
-        setDialog({ open: true, title, message, success });
-    };
+  const handleSignup = async () => {
+    if (loading) return;
 
-    const closeDialog = () => {
-        setDialog((prev) => ({ ...prev, open: false }));
-        if (dialog.success) {
-            router.replace("/login");
-        }
-    };
+    // ✅ 입력값 검증(공백 포함)
+    if (!id.trim() || !pw.trim() || !pwCheck.trim()) {
+      openDialog("입력 오류", "모든 항목을 입력해주세요.");
+      return;
+    }
 
-    const handleSignup = async () => {
-        // 🔹 입력값 검증
-        if (!id || !pw || !pwCheck) {
-            openDialog("입력 오류", "모든 항목을 입력해주세요.");
-            return;
-        }
+    if (pw !== pwCheck) {
+      openDialog("입력 오류", "비밀번호가 다릅니다.");
+      return;
+    }
 
-        if (pw !== pwCheck) {
-            openDialog("입력 오류", "비밀번호가 다릅니다.");
-            return;
-        }
+    try {
+      setLoading(true);
 
-        try {
-            // 🔹 axios로 Next API Route 호출 → Next가 백엔드로 프록시
-            const res = await axios.post("/api/signup", {
-                loginId: id,
-                password: pw,
-            });
+      // ✅ Next API Route 호출 → Next가 백엔드로 프록시
+      const res = await axios.post("/api/signup", {
+        loginId: id,
+        password: pw,
+      });
 
-            if (res.status !== 200 && res.status !== 201) {
-                throw new Error("회원가입에 실패했습니다.");
-            }
+      if (res.status !== 200 && res.status !== 201) {
+        throw new Error("회원가입에 실패했습니다.");
+      }
 
-            openDialog(
-                "회원가입 완료",
-                "회원가입이 완료되었습니다. 로그인해주세요.",
-                true
-            );
-        } catch (e) {
-            console.error("회원가입 오류:", e);
-            openDialog(
-                "회원가입 실패",
-                e.response?.data?.message ||
-                (e.message === "Network Error"
-                    ? "서버와 통신 중 오류가 발생했습니다."
-                    : e.message || "회원가입 중 오류가 발생했습니다.")
-            );
-        }
-    };
+      openDialog("회원가입 완료", "회원가입이 완료되었습니다. 로그인해주세요.", true);
+    } catch (e) {
+      console.error("회원가입 오류:", e);
 
-    return (
-        <Box sx={{ minHeight: "100vh", bgcolor: "#f5f5f7" }}>
-            <Header />
+      openDialog(
+        "회원가입 실패",
+        e?.response?.data?.message ||
+          (e?.message === "Network Error"
+            ? "서버와 통신 중 오류가 발생했습니다."
+            : e?.message || "회원가입 중 오류가 발생했습니다.")
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
-            <Container
-                maxWidth="sm"
-                sx={{
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "flex-start",
-                    pt: 8,
-                    pb: 8,
-                }}
-            >
-                <Card
-                    sx={{
-                        p: 4,
-                        width: "100%",
-                        borderRadius: 3,
-                        boxShadow: "0 14px 40px rgba(15,23,42,0.12)",
-                        border: "1px solid rgba(148,163,184,0.4)",
-                        bgcolor: "white",
-                    }}
-                >
-                    <Typography
-                        variant="h4"
-                        align="center"
-                        fontWeight={800}
-                        sx={{ mb: 1 }}
-                    >
-                        회원가입
-                    </Typography>
-                    <Typography
-                        variant="body2"
-                        align="center"
-                        color="text.secondary"
-                        sx={{ mb: 4 }}
-                    >
-                        도서 관리 서비스를 이용하려면 계정을 생성해주세요.
-                    </Typography>
+  return (
+    <Box sx={{ minHeight: "100vh", bgcolor: "#f5f5f7" }}>
+      <Header />
 
-                    <TextField
-                        fullWidth
-                        label="아이디"
-                        size="medium"
-                        value={id}
-                        onChange={(e) => setId(e.target.value)}
-                        sx={{ mb: 2.5 }}
-                    />
+      <Container
+        maxWidth="sm"
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "flex-start",
+          pt: 8,
+          pb: 8,
+        }}
+      >
+        <Card
+          sx={{
+            p: 4,
+            width: "100%",
+            borderRadius: 3,
+            boxShadow: "0 14px 40px rgba(15,23,42,0.12)",
+            border: "1px solid rgba(148,163,184,0.4)",
+            bgcolor: "white",
+          }}
+        >
+          <Typography variant="h4" align="center" fontWeight={800} sx={{ mb: 1 }}>
+            회원가입
+          </Typography>
+          <Typography
+            variant="body2"
+            align="center"
+            color="text.secondary"
+            sx={{ mb: 4 }}
+          >
+            도서 관리 서비스를 이용하려면 계정을 생성해주세요.
+          </Typography>
 
-                    <TextField
-                        fullWidth
-                        type="password"
-                        label="비밀번호"
-                        size="medium"
-                        value={pw}
-                        onChange={(e) => setPw(e.target.value)}
-                        sx={{ mb: 2.5 }}
-                    />
+          <TextField
+            fullWidth
+            label="아이디"
+            size="medium"
+            value={id}
+            onChange={(e) => setId(e.target.value)}
+            sx={{ mb: 2.5 }}
+          />
 
-                    <TextField
-                        fullWidth
-                        type="password"
-                        label="비밀번호 확인"
-                        size="medium"
-                        value={pwCheck}
-                        onChange={(e) => setPwCheck(e.target.value)}
-                        sx={{ mb: 3 }}
-                    />
+          <TextField
+            fullWidth
+            type="password"
+            label="비밀번호"
+            size="medium"
+            value={pw}
+            onChange={(e) => setPw(e.target.value)}
+            sx={{ mb: 2.5 }}
+          />
 
-                    <Button
-                        fullWidth
-                        variant="contained"
-                        onClick={handleSignup}
-                        sx={{ py: 1.4, mb: 2, fontWeight: 600 }}
-                    >
-                        회원가입
-                    </Button>
+          <TextField
+            fullWidth
+            type="password"
+            label="비밀번호 확인"
+            size="medium"
+            value={pwCheck}
+            onChange={(e) => setPwCheck(e.target.value)}
+            sx={{ mb: 3 }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") handleSignup();
+            }}
+          />
 
-                    <Button
-                        fullWidth
-                        variant="text"
-                        onClick={() => router.push("/login")}
-                        sx={{ py: 1.1 }}
-                    >
-                        이미 계정이 있으신가요? 로그인하러 가기
-                    </Button>
-                </Card>
-            </Container>
+          <Button
+            fullWidth
+            variant="contained"
+            onClick={handleSignup}
+            disabled={loading}
+            sx={{ py: 1.4, mb: 2, fontWeight: 600 }}
+          >
+            {loading ? "처리 중..." : "회원가입"}
+          </Button>
 
-            <Dialog open={dialog.open} onClose={closeDialog}>
-                <DialogTitle>{dialog.title}</DialogTitle>
-                <DialogContent>
-                    <DialogContentText>{dialog.message}</DialogContentText>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={closeDialog} autoFocus>
-                        확인
-                    </Button>
-                </DialogActions>
-            </Dialog>
-        </Box>
-    );
+          <Button
+            fullWidth
+            variant="text"
+            onClick={() => router.push("/login")}
+            sx={{ py: 1.1 }}
+          >
+            이미 계정이 있으신가요? 로그인하러 가기
+          </Button>
+        </Card>
+      </Container>
+
+      <Dialog open={dialog.open} onClose={closeDialog}>
+        <DialogTitle>{dialog.title}</DialogTitle>
+        <DialogContent>
+          <DialogContentText>{dialog.message}</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={closeDialog} autoFocus>
+            확인
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Box>
+  );
 }
