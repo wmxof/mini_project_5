@@ -1,18 +1,38 @@
 version: 0.2
 
+env:
+  variables:
+    APP_DIR: "miniproject4-next"
+
 phases:
   install:
     runtime-versions:
       nodejs: 20
-    commands:
-      - cd miniproject4-next
-      - npm ci
+
   build:
     commands:
+      - cd $APP_DIR
+      - npm ci
       - npm run build
+      - cd ..
+
+      # ---- 최소 아티팩트 구성 ----
+      - rm -rf deploy
+      - mkdir -p deploy/$APP_DIR
+
+      # CodeDeploy 필수: 아티팩트 루트에 appspec.yml
+      - cp appspec.yml deploy/
+      - if [ -d scripts ]; then cp -r scripts deploy/; fi
+
+      # Next.js 실행에 필요한 최소 파일들만 포함
+      - cp -r $APP_DIR/.next deploy/$APP_DIR/
+      - if [ -d $APP_DIR/public ]; then cp -r $APP_DIR/public deploy/$APP_DIR/; fi
+      - cp $APP_DIR/package.json deploy/$APP_DIR/
+      - if [ -f $APP_DIR/package-lock.json ]; then cp $APP_DIR/package-lock.json deploy/$APP_DIR/; fi
+      - if [ -f $APP_DIR/next.config.js ]; then cp $APP_DIR/next.config.js deploy/$APP_DIR/; fi
+      - if [ -f $APP_DIR/.env.production ]; then cp $APP_DIR/.env.production deploy/$APP_DIR/; fi
 
 artifacts:
+  base-directory: deploy
   files:
-    - appspec.yml
-    - miniproject4-next/**/*
-  discard-paths: no
+    - "**/*"
