@@ -1,10 +1,10 @@
 import { Suspense } from "react";
-import EditClient from "./EditClient";
+import BookEditClient from "./BookEditClient";
 
 export default function Page() {
-  return (
-    <Suspense fallback={<div style={{ padding: 24 }}>Loading...</div>}>
-      <EditClient />
-    </Suspense>
-  );
+    return (
+        <Suspense fallback={<div>로딩 중...</div>}>
+            <BookEditClient />
+        </Suspense>
+    );
 }
